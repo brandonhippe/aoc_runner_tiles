@@ -1,4 +1,6 @@
-# AoC Tiles
+# AoC Runner Tiles
+
+This is a fork of [AoC Tiles](https://github.com/LiquidFun/aoc_tiles.git), and has been modified to work with [AoC Runner](https://github.com/brandonhippe/Advent-of-Code-Runner.git).
 
 This script creates a graphic for each day for each year of the Advent of Code. 
 A tile is an image which represents both parts of a day, it looks like this:
