@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Tuple, Dict
 
 import yaml
-from loguru import logger
+from PIL import ImageColor
 
 GITHUB_LANGUAGES_PATH = Path(__file__).parent / "resources" / "github_languages.yaml"
 
@@ -16,12 +16,8 @@ overrides = {"Jupyter Notebook": {"type": "programming"}}
 @lru_cache
 def github_languages_config() -> Dict[str, Dict]:
     with open(GITHUB_LANGUAGES_PATH) as file:
-        logger.debug("Loading github_languages.yaml from {}", GITHUB_LANGUAGES_PATH)
         yaml_loader = yaml.CLoader if yaml.__with_libyaml__ else yaml.Loader
-        if not yaml.__with_libyaml__:
-            logger.warning("Using slow yaml parser (0.5s vs 0.1s)!")
         github_languages = yaml.load(file, Loader=yaml_loader)
-        logger.debug("Loaded github_languages.yaml from {}", GITHUB_LANGUAGES_PATH)
 
         for language, override_dict in overrides.items():
             if language not in github_languages:
@@ -30,6 +26,14 @@ def github_languages_config() -> Dict[str, Dict]:
 
         return github_languages
 
+@lru_cache
+def language_to_colors() -> Dict[str, str]:
+    language_to_color = {}
+    for language, data in github_languages_config().items():
+        if "color" in data and "extensions" in data and data["type"] == "programming" and language not in excludes:
+            language_to_color[language] = data["color"]
+
+    return language_to_color
 
 @lru_cache
 def extension_to_colors() -> Dict[str, str]:

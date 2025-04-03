@@ -1,19 +1,19 @@
+import argparse
 import math
 from functools import partial
 from pathlib import Path
-from typing import List, Tuple, Union, Dict
+from typing import List, Tuple, Union
 
-from PIL import ImageColor, Image
+from PIL import Image, ImageColor
 from PIL.ImageDraw import ImageDraw
 
-from aoc_tiles.colors import color_similarity, darker_color, extension_to_colors
-from aoc_tiles.config import Config
-from aoc_tiles.fonts import main_font, secondary_font
-from aoc_tiles.leaderboard import DayScores
+from .colors import color_similarity, darker_color, language_to_colors
+from .fonts import main_font, secondary_font
+from .leaderboard import DayScores
 
 
 def format_time(time: str) -> str:
-    """Formats time as mm:ss if the time is below 1 hour, otherwise it returns >1h to a max of >24h
+    """Formats time as-is if time is a runtime (doesn't contain a colon), mm:ss if the time is below 1 hour, otherwise it returns >1h to a max of >24h
 
     >>> format_time("00:58:32")
     '58:32'
@@ -23,15 +23,17 @@ def format_time(time: str) -> str:
     time = time.replace("&gt;", ">")
     if ">" in time:
         formatted = time
-    else:
+    elif ":" in time:
         h, m, s = time.split(":")
         formatted = f">{h}h" if int(h) >= 1 else f"{m:02}:{s:02}"
+    else:
+        return time
     return f"{formatted:>5}"
 
 
 class TileDrawer:
-    def __init__(self, config: Config):
-        self.config = config
+    def __init__(self, args: argparse.Namespace):
+        self.config = args
 
     def draw_tile(
             self, day: str, languages: List[str], day_scores: Union[DayScores, None], path: Path, stars: int
@@ -44,7 +46,7 @@ class TileDrawer:
         # Get all colors of the day, check if any one is similar to TEXT_COLOR
         # If yes, add outline
         for language in languages:
-            color = ImageColor.getrgb(extension_to_colors()[language])
+            color = ImageColor.getrgb(language_to_colors()[language])
             if color_similarity(color, self.config.text_color, self.config.contrast_improvement_threshold):
                 if "outline" in self.config.contrast_improvement_type:
                     text_kwargs["stroke_width"] = 1
@@ -81,10 +83,10 @@ class TileDrawer:
                     draw_line((160, 35 + y, 150, 25 + y))
                     draw_line((160, 35 + y, 180, 15 + y))
 
-                elif self.config.what_to_show_on_right_side == "time_and_rank":
+                elif self.config.what_to_show_on_right_side in ["time_and_rank", "runtime"]:
                     draw_text((105, 25 + y), "time", align="right", font=secondary_font(10))
                     draw_text((105, 35 + y), "rank", align="right", font=secondary_font(10))
-                    draw_text((143, 3 + y), format_time(time), align="right", font=secondary_font(18))
+                    draw_text((143, 3 + y), format_time(time)[:5], align="right", font=secondary_font(18))
                     draw_text((133, 23 + y), f"{rank:>6}", align="right", font=secondary_font(18))
 
                 elif self.config.what_to_show_on_right_side == "loc":
@@ -105,7 +107,7 @@ class TileDrawer:
         image.save(path)
 
     def get_alternating_background(self, languages, both_parts_completed=True, *, stripe_width=20):
-        colors = [ImageColor.getrgb(extension_to_colors()[language]) for language in languages]
+        colors = [ImageColor.getrgb(language_to_colors()[language]) for language in languages]
         if len(colors) == 1:
             colors.append(darker_color(colors[0]))
         image = Image.new("RGB", (200, 100), self.config.not_completed_color)
