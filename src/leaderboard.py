@@ -39,8 +39,12 @@ def parse_leaderboard(year: int, runtime_data: Optional[DataTracker]=None, use_r
         # replace "-" with None to be able to handle the data later, like if no score existed for the day
         scores = [s if s != "-" else None for s in scores]
         if year >= 2025:
-            for ix in range(2, len(scores)+1, 3):
-                scores.insert(ix, None)  # insert None for missing rank data
+            scores.insert(1, None)
+            scores.insert(1, None)
+            if len(scores) > 3:
+                scores.insert(4, None)
+                scores.insert(4, None)
+            print(scores)
         assert len(scores) in (3, 6), f"Number scores for {day=} ({scores}) are not 3 or 6."
         if use_runtime:
             try:
