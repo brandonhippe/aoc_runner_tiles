@@ -44,7 +44,7 @@ def parse_leaderboard(year: int, runtime_data: Optional[DataTracker]=None, use_r
             if len(scores) > 3:
                 scores.insert(4, None)
                 scores.insert(4, None)
-            print(scores)
+        
         assert len(scores) in (3, 6), f"Number scores for {day=} ({scores}) are not 3 or 6."
         if use_runtime:
             try:
