@@ -2,8 +2,8 @@ import re
 from dataclasses import dataclass
 from typing import Dict, Optional, Union
 
-from ....data_tracker import DataTracker
-from ....web import get_leaderboard
+from aoc_runner.data_tracker import DataTracker
+from aoc_runner.web import get_leaderboard
 
 
 @dataclass
@@ -22,13 +22,16 @@ def parse_leaderboard(year: int, runtime_data: Optional[DataTracker]=None, use_r
             raise ValueError("Runtime data must be provided if use_runtime is True.")
 
     no_stars = "You haven't collected any stars... yet."
-    start = '<span class="leaderboard-daydesc-both"> *Time *Rank *Score</span>\n'
+    if year < 2025:
+        start = '<span class="leaderboard-daydesc-both"> *Time *Rank *Score</span>\n'
+    else:
+        start = '<span class="leaderboard-daydesc-both">-Part 2-</span>\n'
     end = "</pre>"
     html = get_leaderboard(year)
     if no_stars in html:
         return {}
     matches = re.findall(rf"{start}(.*?){end}", html, re.DOTALL | re.MULTILINE)
-    assert len(matches) == 1, f"Found {'no' if len(matches) == 0 else 'more than one'} leaderboard?!"
+    assert len(matches) > 0, "Found no leaderboard?!"
     table_rows = matches[0].strip().split("\n")
     day_to_scores = {}
     for line in table_rows:
