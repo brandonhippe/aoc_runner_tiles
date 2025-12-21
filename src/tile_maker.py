@@ -230,9 +230,9 @@ class TileMaker:
             day_to_stars = solve_data.year_to_data[year].day_to_stars if year in solve_data.year_to_data else {}
             day_to_paths = solve_data.year_to_data[year].day_to_paths if year in solve_data.year_to_data else defaultdict(list)
 
-            for day in filter(lambda d: (year, d) in language.ran, range(1, 26)):
+            for day in filter(lambda d: (year, d) in language.ran, range(1, (26 if year < 2025 else 13))):
                 stars = self._get_stars(day_to_scores.get(day), day_to_solution[day])
-                if day == 25 and stars == 1:
+                if day == (25 if year < 2025 else 12) and stars == 1:
                     stars = 2
 
                 day_to_stars[day] = stars
